@@ -3,6 +3,7 @@ import argparse
 import os
 import numpy as np
 import time
+import argparse
 import random
 import h5py
 from torch.autograd import Variable
@@ -12,32 +13,24 @@ import matplotlib.pyplot as plt
 from sklearn import manifold,datasets
 from MorphoGNN import MorphoGNN
 
-def load_model(args):
+def load_model(name='morpho',model_path='./MorphoGNN.t7'):
     device = torch.device('cuda')
-    if args.model_name == 'morpho':
-        model = MorphoGNN(args).to(device)
+    if name == 'morpho':
+        model = MorphoGNN().to(device)
     else:
         raise Exception("Not implemented")
-    model.load_state_dict(torch.load(args.model_path),False)
+    model.load_state_dict(torch.load(model_path),False)
     return model
 
-def ExtractFeature():
-    parser = argparse.ArgumentParser(description='Feature Extract')
-    parser.add_argument('--model_name', type=str, default='morpho', metavar='N')
-    parser.add_argument('--model_path', type=str, default=r'./models/MorphoGNN(1:1).t7')
-    parser.add_argument('--neuron_list', type=str, default=r'./neuron7')
-    parser.add_argument('--k', type=int, default=10)
-    parser.add_argument('--emb_dims', type=int, default=1024)
-    parser.add_argument('--dropout', type=float, default=0.5)
-    args = parser.parse_args()
-    model = load_model(args)
+def ExtractFeature(model_path,neuron_list):
+    model = load_model('morpho',model_path)
     model.eval()
     NeuronVectorDatabase = {}
     with torch.no_grad():
-        for i, neuron_type in enumerate(os.listdir(args.neuron_list)):
-            for j, swc in enumerate(os.listdir(args.neuron_list + '/' + neuron_type)):
+        for i, neuron_type in enumerate(os.listdir(neuron_list)):
+            for j, swc in enumerate(os.listdir(neuron_list + '/' + neuron_type)):
                 if swc.split('.')[-1] != 'swc': continue
-                input = ReadSWC(args.neuron_list + '/' + neuron_type + '/' + swc, thresold=6000, CLIP=False,Padding=True)
+                input = ReadSWC(neuron_list + '/' + neuron_type + '/' + swc, thresold=6000, CLIP=False,Padding=True)
                 input = input.reshape(((1,) + input.shape))
                 input = Normalization(input)
                 input = torch.tensor(input)
@@ -51,7 +44,7 @@ def ExtractFeature():
                 feature = model.feature
                 feature = feature.cpu().numpy().squeeze()
                 NeuronVectorDatabase[neuron_type + '/' + swc] = feature
-    np.save('Pyramidal39.npy', NeuronVectorDatabase)
+    np.save(r'./database.npy', NeuronVectorDatabase)
 
 def CaculateEucliDist(a,b):
     return np.sqrt(sum(np.power((a - b), 2)))
@@ -146,9 +139,9 @@ def Tsne(database):
 
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(),loc='upper right',shadow=False,frameon=False,handletextpad=0.2,fontsize=14)
+    plt.legend(by_label.values(), by_label.keys(),loc='upper right',shadow=False,frameon=False,handletextpad=0.2,fontsize=10) #fontsize=14
 
-    plt.title('Ours',size=20)
+    plt.title('Feature',size=20)
     plt.axis('off')
     plt.xticks([])
     plt.yticks([])
@@ -179,9 +172,18 @@ def ReturnClassFeature(npy,type):
 
 
 if __name__ == '__main__':
-    Tsne('MorphoGNN(1:1).npy')
-    #ExtractFeature()
-    #QueryTest('MorphDatabase.npy', 1)
+    parser = argparse.ArgumentParser(description='neuron indexing')
+    parser.add_argument('--task', type=str, help='choose your task',choices=['ExtractFeature','QueryTest','Visualize'])
+    parser.add_argument('--query_times',type=int)
+    parser.add_argument('--swc_dir', type=str,default='./neuron7')
+    parser.add_argument('--model_path', type=str, default='./MorphoGNN.t7')
+    args = parser.parse_args()
+    if args.task == 'ExtractFeature':
+        ExtractFeature(args.model_path,args.swc_dir)
+    elif args.task == 'QueryTest':
+        QueryTest('database.npy', args.query_times)
+    elif args.task == 'Visualize':
+        Tsne('database.npy')
 
 
 

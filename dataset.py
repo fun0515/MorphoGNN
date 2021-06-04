@@ -6,15 +6,12 @@ import h5py
 import logging  # 引入logging模块
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-train_dir = r'./DataSets/train_6000.h5py'
-test_dir = r'./DataSets/test_6000.h5py'
-
 class DataSet(data.Dataset):
-    def __init__(self, train=True):
+    def __init__(self, train=True,train_dir='./TrainDatasets_6000.h5',test_dir='./TestDatasets_6000.h5',norm=True):
         if train:
-            data,label = ReadH5py(train_dir,normalization=True)
+            data,label = ReadH5py(train_dir,normalization=norm)
         else:
-            data,label = ReadH5py(test_dir,normalization=True)
+            data,label = ReadH5py(test_dir,normalization=norm)
 
         logging.info('data: {}'.format(data.shape))
         logging.info('label: {}'.format(label.shape))

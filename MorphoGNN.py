@@ -273,5 +273,5 @@ if __name__ == '__main__':
             if test_acc >= best_test_acc:
                 best_test_acc = test_acc
                 best_test_avg_acc = avg_per_class_acc
-                torch.save(model.state_dict(), 'models/TripletEdgeConv(1:1).t7')
+                torch.save(model.state_dict(), './MorphoGNN.t7')
         print('best acc: ',best_test_acc,' best avg acc: ',best_test_avg_acc)

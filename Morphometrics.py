@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import time
 import h5py
+import argparse
 from MorphoGNN import *
 
 import math
@@ -13,7 +14,7 @@ def WriteH5py(dir,data,label):
     f['data'] = data
     f['label'] = label
 
-def ReturnFeatures(neuron):
+def     ReturnFeatures(neuron):
     features = []
     features.append(nm.get('n_sections',neuron))
     features.append(nm.get('n_leaves',neuron))
@@ -58,9 +59,9 @@ def GenerateMorphDataset(neuron_list,proportion):
     np.random.shuffle(labels)
     datas = datas.astype(np.float32)
     labels = labels.astype(np.uint8)
-    WriteH5py(dir=r'DataSets/neuron7/MorphTrainDatasets.h5', data=datas[0:math.ceil(proportion * datas.shape[0])],
+    WriteH5py(dir=r'./MorphTrainDatasets.h5', data=datas[0:math.ceil(proportion * datas.shape[0])],
               label=labels[0:math.ceil(proportion * labels.shape[0])])
-    WriteH5py(dir=r'DataSets/neuron7/MorphTestDatasets.h5', data=datas[math.ceil(proportion * datas.shape[0]):-1],
+    WriteH5py(dir=r'./MorphTestDatasets.h5', data=datas[math.ceil(proportion * datas.shape[0]):-1],
               label=labels[math.ceil(proportion * labels.shape[0]):-1])
 
 class Mlp(nn.Module):
@@ -83,8 +84,8 @@ class Mlp(nn.Module):
 
 
 def train():
-    train_dataset = DataSet(train=True)
-    test_dataset = DataSet(train=False)
+    train_dataset = DataSet(train=True,train_dir='./MorphTrainDatasets.h5',norm=False)
+    test_dataset = DataSet(train=False,test_dir='./MorphTestDatasets.h5',norm=False)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=2,
                                                drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=4, shuffle=False, num_workers=2,
@@ -159,7 +160,7 @@ def train():
             if test_acc >= best_test_acc:
                 best_test_acc = test_acc
                 best_test_avg_acc = avg_per_class_acc
-                torch.save(model.state_dict(), 'checkpoints/exp/models/Mlp(512-256).t7')
+                torch.save(model.state_dict(), './Mlp(512-256).t7')
         print('best acc: ', best_test_acc, ' best avg acc: ', best_test_avg_acc)
 
 def GenerateMorphDatabase(neuron_list):
@@ -192,4 +193,8 @@ def Replace(dir1,dir2):
     os.remove(dir1)
     os.rename(dir2,dir1)
 if __name__ == '__main__':
-    GenerateMorphDatabase(neuron_list=r'./neuron7')
+    parser = argparse.ArgumentParser(description='generate morphometric dataset')
+    parser.add_argument('--swc_dir', type=str, default='./neuron7', help='file path of .swc files')
+    args = parser.parse_args()
+    GenerateMorphDataset(neuron_list=args.swc_dir,proportion=0.7)
+    train()

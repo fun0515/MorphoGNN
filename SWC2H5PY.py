@@ -3,6 +3,7 @@ import math
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 from mpl_toolkits.mplot3d import Axes3D
 
 def ReadH5py(dir,normalization=True):
@@ -97,9 +98,9 @@ def GenerateNeuronDataset(neuron_list,thresold,proportion):
     np.random.shuffle(labels)
     datas = datas.astype(np.float32)
     labels = labels.astype(np.uint8)
-    WriteH5py(dir = r'DataSets/neuron7/TrainDatasets_6000.h5',data=datas[0:math.ceil(proportion*datas.shape[0])],
+    WriteH5py(dir = r'./TrainDatasets_6000.h5',data=datas[0:math.ceil(proportion*datas.shape[0])],
               label=labels[0:math.ceil(proportion*labels.shape[0])])
-    WriteH5py(dir=r'DataSets/neuron7/TestDatasets_6000.h5', data=datas[math.ceil(proportion * datas.shape[0]):-1],
+    WriteH5py(dir=r'./TestDatasets_6000.h5', data=datas[math.ceil(proportion * datas.shape[0]):-1],
               label=labels[math.ceil(proportion * labels.shape[0]):-1])
 
 
@@ -121,6 +122,9 @@ def VisualizeH5py(dir):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='generate morphological dataset')
+    parser.add_argument('--swc_dir',type=str,default='./neuron7',help='file path of .swc files')
+    args = parser.parse_args()
     # VisualizeH5py(r'DataSets/neuron7/TrainDatasets_6000.h5')
-    GenerateNeuronDataset(neuron_list=r'./neuron7',thresold=6000,proportion=0.7) # neuron_list is where .swc files stored
+    GenerateNeuronDataset(neuron_list=args.swc_dir,thresold=6000,proportion=0.7)
 
