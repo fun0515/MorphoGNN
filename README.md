@@ -1,34 +1,34 @@
 # MorphEmbedding
 Morphological embedding for single neuron with graph neuron networks.
 ## Data preprocessing
-Make sure that the morphology data consists of `.swc` files, each of which contains the morphological structure of a single neuron.  
+Make sure that the morphology data is composed of `.swc` files, each of which contains the morphological structure of a single neuron. Activate your python environment and using:
 ```python
-run SWC2H5PY.py
+python SWC2H5PY.py --swc_dir=./neuron7
 ```
-to generate trainable corresponding point cloud datasets. This dataset is stored in `.h5py` files, with the points of neurons filled up to a same limit. Don't forget to modify ```neuron_list``` for your own `.swc` directory.
+to generate trainable corresponding point cloud datasets. `--swc_dir` is the path where you store the morphological data. Then you will see two `.h5` files in your current directory, the training set and the test set.
 ## Train MorphoGNN
-Replace the file path in `dataSet.py` with the dataset you generated in the previous step. Then
+When the trainable data is generated, run:
 ```python
-run MorphoGNN.py
+python MorphoGNN.py
 ```
-to train the MorphoGNN model. `num_classes` needs to be set according to your own morphology category.
+to train the MorphoGNN model. After running 50 epoches, the model file named `MorphoGNN.t7` appears in the current directory.
 ## Retrieval
-`retrieval.py` helps you retrieve nerve fibers based on the MorphoGNN you trained. Firstly, you should 
+`retrieval.py` helps you retrieve nerve fibers based on the MorphoGNN model you trained. Firstly, you should run:
 ```python
-run ExtractFeature()
+python retrieval.py --task=ExtractFeature --model_path=./MorphoGNN.t7 --swc_dir=./neuron7
 ```
 to build a feature library for each neuron, which is saved as `.npy` file. Then 
 ```python
-run QueryTest(feature_library, rounds)
+python retrieval.py --task=QueryTest --query_times=100
 ```
-to retrieve the most similar neurons in this library by `rounds` times. Or you can
+to retrieve the most similar neurons in this library `100` times. Or you can using this command:
 ```python
-run Tsne(feature_library)
+python retrieval.py --task=Visualize
 ```
 to visulize features distribution.
 ## Morphometrics
-We also provide an example of classifying neurons using several traditional morphometrics in `morphometrics.py`. Morphometrics are captured through [NeuroM](https://github.com/BlueBrain/NeuroM).
+We also provide an example of classifying neurons using five traditional morphometrics in `morphometrics.py`. Morphometrics are captured through [NeuroM](https://github.com/BlueBrain/NeuroM). Run:
 ```python
-run morphometrics.py
+python morphometrics.py --swc_dir=./neuron7
 ```
 to genrate datasets with traditional morphometrics and train a simple multilayer perceptron to classify.
