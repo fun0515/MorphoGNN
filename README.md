@@ -27,7 +27,7 @@ python retrieval.py --task=Visualize
 ```
 to visulize features distribution.
 ## Morphometrics
-We also provide an example of classifying neurons using five traditional morphometrics in ''morphometrics.py''. Morphometrics are captured through [NeuroM](https://github.com/BlueBrain/NeuroM). Run:
+We also provide an example of classifying neurons using sixteen traditional morphometrics in ''morphometrics.py''. Morphometrics are captured through [NeuroM](https://github.com/BlueBrain/NeuroM). Run:
 ```python
 python morphometrics.py --swc_dir=./neuron7
 ```
